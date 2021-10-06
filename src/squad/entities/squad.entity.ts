@@ -1,8 +1,21 @@
-import { BaseEntity } from 'src/shared/base-entity';
-import { Column, Entity } from 'typeorm';
+import { BaseEntity } from '../../shared/base-entity';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Generated,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity({ name: 'squad' }) // Definindo nome da tabela
-export class Squad extends BaseEntity {
+export class Squad {
+  @PrimaryGeneratedColumn('uuid')
+  @Generated('uuid')
+  id: string;
+
+  @CreateDateColumn({ nullable: false, name: 'created_at' })
+  created_at: string;
+
   @Column({ nullable: false }) // Não pode ser nulo
   name: string;
 

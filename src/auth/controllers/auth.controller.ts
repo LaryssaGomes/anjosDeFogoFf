@@ -14,10 +14,14 @@ import { AuthService } from '../services/auth.service';
 import JwtAuthenticationGuard from '../jwt/jwt-authentication.guard';
 import RegisterDto from '../dtos/register.dto';
 import { LocalAuthenticationGuard } from '../jwt/localAuthentication.guard';
+import { UsersService } from 'src/users/services/users.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authenticationService: AuthService) {}
+  constructor(
+    private readonly authenticationService: AuthService,
+    private readonly usersService: UsersService,
+  ) {}
 
   @UseGuards(JwtAuthenticationGuard)
   @Get()
@@ -40,12 +44,21 @@ export class AuthController {
   @HttpCode(200)
   @UseGuards(LocalAuthenticationGuard)
   @Post('log-in')
-  async logIn(@Req() request: RequestWithUser, @Res() response: Response) {
+  async logIn(@Req() request: RequestWithUser) {
     const { user } = request;
-    const cookie = this.authenticationService.getCookieWithJwtToken(user.id);
-    response.setHeader('Set-Cookie', cookie);
-    user.password = undefined;
-    return response.send(user);
+
+    const accessTokenCookie =
+      this.authenticationService.getCookieWithJwtAccessToken(user.id);
+    const { cookie: refreshTokenCookie, token: refreshToken } =
+      this.authenticationService.getCookieWithJwtRefreshToken(user.id);
+
+    await this.usersService.setCurrentRefreshToken(refreshToken, user.id);
+
+    request.res.setHeader('Set-Cookie', [
+      accessTokenCookie,
+      refreshTokenCookie,
+    ]);
+    return user;
   }
 
   @Post('register')

@@ -1,8 +1,22 @@
-import { BaseEntity } from 'src/shared/base-entity';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Exclude } from 'class-transformer';
+import { BaseEntity } from '../../shared/base-entity';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Generated,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
-class User extends BaseEntity {
+class User {
+  @PrimaryGeneratedColumn('uuid')
+  @Generated('uuid')
+  id: string;
+
+  @CreateDateColumn({ nullable: false, name: 'created_at' })
+  created_at: string;
+
   @Column({ unique: true })
   public email: string;
 
@@ -11,6 +25,9 @@ class User extends BaseEntity {
 
   @Column()
   public password: string;
+
+  @Exclude()
+  public currentHashedRefreshToken?: string;
 }
 
 export default User;
